@@ -1,0 +1,70 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "hasura.fullname" . }}-migrations
+  labels:
+    {{- include "hasura.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      name: {{ include "hasura.fullname" . }}-migrations
+      labels:
+        {{- include "hasura.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: data
+          emptyDir: { }
+        - name: ssh-key
+          secret:
+            secretName: {{ quote .Values.migrations.git.sshKeySecret }}
+            defaultMode: 0400
+      initContainers:
+        - name: git-clone
+          image: {{ .Values.migrations.git.image }}
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - set -ex;
+              if [ ! -d .git ]; then
+              git init --quiet;
+              git remote add origin {{ .Values.migrations.git.repo }};
+              git fetch origin +refs/heads/{{ .Values.migrations.git.branch }};
+              git checkout {{ .Values.migrations.git.commit }} -b {{ .Values.migrations.git.branch }};
+              fi
+          workingDir: /data
+          env:
+            - name: GIT_SSH_COMMAND
+              value: ssh -i /.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: ssh-key
+              readOnly: true
+              mountPath: '/.ssh'
+      containers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - set -ex;
+              hasura-cli metadata apply;
+              hasura-cli migrate apply --all-databases;
+              hasura-cli metadata reload;
+          workingDir: /data
+          env:
+            - name: HASURA_GRAPHQL_ENDPOINT
+              value: "http://{{ include "hasura.fullname" . }}"
+          envFrom:
+          {{- if .Values.extraEnvVarsSecret }}
+            - secretRef:
+                name: {{ .Values.extraEnvVarsSecret }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+{{- end }}
