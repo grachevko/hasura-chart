@@ -15,12 +15,13 @@ image:
 extraEnvVarsSecret: ""
 
 migrations:
-  # Docker image which contain migrations,metadata,config.yml inside /data directory
+  # Docker image which contain migrations,metadata,config.yml
   image:
     registry: *registry
     repository: ""
     tag: ""
     pullSecrets: [ ]
+    path: /data
 
 nameOverride: ""
 fullnameOverride: ""

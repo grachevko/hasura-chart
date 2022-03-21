@@ -27,11 +27,7 @@ spec:
       initContainers:
         - name: copy
           image: "{{ .Values.migrations.image.registry }}/{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag | default "latest" }}"
-          command:
-            - cp
-            - -R
-            - '*'
-            - /shared/data
+          command: ["/bin/sh", "-c", "cp -R /{{ .Values.migrations.image.path }}/* /shared-data/"]
           workingDir: /data
           volumeMounts:
             - name: data
