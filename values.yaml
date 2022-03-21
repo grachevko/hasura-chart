@@ -13,13 +13,11 @@ image:
 extraEnvVarsSecret: ""
 
 migrations:
-  enabled: false
-  git:
-    image: alpine/git:v2.32.0
-    sshKeySecret: ""
-    repo: ""
-    branch: master
-    commit: ""
+  # Docker image which contain migrations,metadata,config.yml inside /data directory
+  image:
+    registry: docker.io
+    repository: ""
+    tag: ""
 
 imagePullSecrets: [ ]
 nameOverride: ""

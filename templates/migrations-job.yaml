@@ -1,4 +1,4 @@
-{{- if .Values.migrations.enabled }}
+{{- if .Values.migrations.image.repository }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -20,32 +20,18 @@ spec:
       volumes:
         - name: data
           emptyDir: { }
-        - name: ssh-key
-          secret:
-            secretName: {{ quote .Values.migrations.git.sshKeySecret }}
-            defaultMode: 0400
       initContainers:
-        - name: git-clone
-          image: {{ .Values.migrations.git.image }}
-          command: [ "/bin/sh", "-c" ]
-          args:
-            - set -ex;
-              if [ ! -d .git ]; then
-              git init --quiet;
-              git remote add origin {{ .Values.migrations.git.repo }};
-              git fetch origin +refs/heads/{{ .Values.migrations.git.branch }};
-              git checkout {{ .Values.migrations.git.commit }} -b {{ .Values.migrations.git.branch }};
-              fi
+        - name: copy
+          image: "{{ .Values.migrations.image.registry }}/{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag | default "latest" }}"
+          command:
+            - cp
+            - -R
+            - *
+            - /shared/data
           workingDir: /data
-          env:
-            - name: GIT_SSH_COMMAND
-              value: ssh -i /.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes
           volumeMounts:
             - name: data
-              mountPath: /data
-            - name: ssh-key
-              readOnly: true
-              mountPath: '/.ssh'
+              mountPath: /shared-data
       containers:
         - name: migrate
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
