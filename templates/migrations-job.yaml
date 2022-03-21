@@ -22,7 +22,7 @@ spec:
           emptyDir: { }
       initContainers:
         - name: copy
-          image: "{{ .Values.migrations.image.registry }}/{{ .Values.migrations.image.registry }}/{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag | default "latest" }}"
+          image: "{{ .Values.migrations.image.registry }}/{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag | default "latest" }}"
           command:
             - cp
             - -R
