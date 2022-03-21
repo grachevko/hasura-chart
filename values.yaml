@@ -5,6 +5,7 @@
 replicaCount: 1
 
 image:
+  registry: &registry docker.io
   repository: hasura/graphql-engine
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -15,7 +16,7 @@ extraEnvVarsSecret: ""
 migrations:
   # Docker image which contain migrations,metadata,config.yml inside /data directory
   image:
-    registry: docker.io
+    registry: *registry
     repository: ""
     tag: ""
 
