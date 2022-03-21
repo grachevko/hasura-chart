@@ -16,6 +16,10 @@ spec:
       labels:
         {{- include "hasura.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.migrations.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       restartPolicy: Never
       volumes:
         - name: data

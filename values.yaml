@@ -10,6 +10,7 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: v2.3.1.cli-migrations-v3
+  pullSecrets: [ ]
 
 extraEnvVarsSecret: ""
 
@@ -19,8 +20,8 @@ migrations:
     registry: *registry
     repository: ""
     tag: ""
+    pullSecrets: [ ]
 
-imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
 
